@@ -1,0 +1,59 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: go-app
+  namespace: go-test
+spec:
+  selector:
+    matchLabels:
+      app: go
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: go
+      annotations:
+        prometheus.io/scrape: "true"
+        prometheus.io/port: "17701"
+        prometheus.io/path: "/metrics/"
+    spec:
+#      hostAliases:
+#        - ip: "10.10.10.10"
+#          hostnames:
+#            - "abc"
+      containers:
+      - image: bcr.bkash.com/go-app:v1.0 
+        imagePullPolicy: Always
+        name: go-app
+        ports:
+        - containerPort: 8080
+          name: http
+          protocol: TCP
+        envFrom:
+          - configMapRef:
+              name: go-configmap
+        env:
+          - name: GCS_BUCKET_DOMAIN
+            valueFrom:
+              secretKeyRef:
+                name: gcs-bucket-name-secret
+                key: gcs-bucket-name    
+#        resources:
+#          requests:
+#            memory: "112Mi"
+#            cpu: "0.1"
+#          limits:
+#            memory: "512M"
+#            cpu: "0.7"
+#        livenessProbe:
+#          httpGet:
+#            path: /balance/status
+#            port: 7701
+#          initialDelaySeconds: 15
+#          periodSeconds: 30
+#        readinessProbe:
+#          httpGet:
+#            path: /balance/status
+#            port: 7701
+#          initialDelaySeconds: 15
+#          periodSeconds: 30
